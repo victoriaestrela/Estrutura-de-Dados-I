@@ -25,9 +25,7 @@ int conta_folhas(Arv* a);
 int altura (Arv* a);
 
 int main(void) {
-    // Para facilitar a leitura, vamos criar "apelidos" para as suas funções
-    // com balanceamento. Isso não muda nada no código, só deixa mais claro
-    // o que estamos chamando.
+    //Main de testes apenas
     #define insere_avl insere_recursivo
     #define remove_avl remove_folha
 
