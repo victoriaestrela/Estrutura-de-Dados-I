@@ -11,6 +11,7 @@ Arv* arv_criavazia(void);
 Arv* arv_cria(char c, Arv* e, Arv* d);
 Arv* rotacao_ll(Arv* a);
 Arv* rotacao_rr(Arv* a);
+Arv* balancear(Arv* a);
 Arv* insere_recursivo(Arv* a, char c);
 Arv* insere_nao_recursivo(Arv* a, char c); //sempre ordenado
 Arv* remove_folha(Arv* a, char c);
@@ -25,7 +26,9 @@ int conta_folhas(Arv* a);
 int altura (Arv* a);
 
 int main(void) {
-    //Main de testes apenas
+    // Para facilitar a leitura, vamos criar "apelidos" para as suas funções
+    // com balanceamento. Isso não muda nada no código, só deixa mais claro
+    // o que estamos chamando.
     #define insere_avl insere_recursivo
     #define remove_avl remove_folha
 
@@ -104,6 +107,36 @@ Arv* rotacao_rr(Arv* a) { //quando fator negativo
     no->esq = a;
     return no; // 'no' é a nova raiz da sub-árvore
 }
+Arv* balancear(Arv* a) {
+    // Se o nó for nulo, não há o que balancear.
+    if (a == NULL) {
+        return NULL;
+    }
+
+    // Calcula o Fator de Balanço
+    int fb = altura(a->esq) - altura(a->dir);
+
+    // ---- DESBALANCEADO PARA A ESQUERDA (Fator POSITIVO) ----
+    if (fb > 1) {
+        int fb_filho = altura(a->esq->esq) - altura(a->esq->dir);
+        if (fb_filho < 0) { // Caso Esquerda-Direita
+            a->esq = rotacao_rr(a->esq);
+        }
+        return rotacao_ll(a); // Retorna a nova raiz da sub-árvore
+    }
+
+    // ---- DESBALANCEADO PARA A DIREITA (Fator NEGATIVO) ----
+    if (fb < -1) {
+        int fb_filho = altura(a->dir->esq) - altura(a->dir->dir);
+        if (fb_filho > 0) { // Caso Direita-Esquerda
+            a->dir = rotacao_ll(a->dir);
+        }
+        return rotacao_rr(a); // Retorna a nova raiz da sub-árvore
+    }
+
+    // Se não precisou rotacionar, apenas retorna o ponteiro do nó original.
+    return a;
+}
 Arv* insere_recursivo(Arv* a, char c) {
         // PARTE 1: INSERÇÃO
         if (a == NULL) {
@@ -118,44 +151,7 @@ Arv* insere_recursivo(Arv* a, char c) {
         }
         else return a;
 
-        // ------------------------------------------------------------------
-        // PARTE 2: BALANCEAMENTO (COM ROTAÇÃO DUPLA)
-        // ------------------------------------------------------------------
-
-        int fb = altura(a->esq) - altura(a->dir);
-
-        // ---- DESBALANCEADO PARA A ESQUERDA (Fator POSITIVO) ----
-        if (fb > 1) {
-            // Verifica o filho da esquerda para saber se é caso simples ou duplo
-            int fb_filho = altura(a->esq->esq) - altura(a->esq->dir);
-
-            // Se fb do filho for negativo, é o caso Esquerda-Direita (precisa de rotação dupla)
-            if (fb_filho < 0) {
-                // Passo 1 da rotação dupla: rotaciona o filho primeiro
-                a->esq = rotacao_rr(a->esq);
-            }
-
-            // Passo 2 (ou único passo se for Esquerda-Esquerda): rotaciona o pai
-            return rotacao_ll(a);
-        }
-
-        // ---- DESBALANCEADO PARA A DIREITA (Fator NEGATIVO) ----
-        if (fb < -1) {
-            // Verifica o filho da direita
-            int fb_filho = altura(a->dir->esq) - altura(a->dir->dir);
-
-            // Se fb do filho for positivo, é o caso Direita-Esquerda (precisa de rotação dupla)
-            if (fb_filho > 0) {
-                // Passo 1 da rotação dupla: rotaciona o filho primeiro
-                a->dir = rotacao_ll(a->dir);
-            }
-
-            // Passo 2 (ou único passo se for Direita-Direita): rotaciona o pai
-            return rotacao_rr(a);
-        }
-
-        // Se não precisou rotacionar, retorna o ponteiro original
-        return a;
+        return balancear(a);
 }
 
 
@@ -211,33 +207,7 @@ Arv* remove_folha(Arv* a, char c) {
                 return NULL; // Retorna NULL para o nó pai, efetivamente desconectando a folha.
             }
         }
-    // ------------------------------------------------------------------
-    // PARTE 2: BALANCEAMENTO (O mesmo código da inserção entra aqui)
-    // ------------------------------------------------------------------
-
-    // Este bloco é executado na "volta" da recursão para cada nó no caminho.
-    int fb = altura(a->esq) - altura(a->dir);
-
-    // ---- DESBALANCEADO PARA A ESQUERDA (Fator POSITIVO) ----
-    if (fb > 1) {
-        int fb_filho = altura(a->esq->esq) - altura(a->esq->dir);
-        if (fb_filho < 0) { // Caso Esquerda-Direita
-            a->esq = rotacao_rr(a->esq);
-        }
-        return rotacao_ll(a);
-    }
-
-    // ---- DESBALANCEADO PARA A DIREITA (Fator NEGATIVO) ----
-    if (fb < -1) {
-        int fb_filho = altura(a->dir->esq) - altura(a->dir->dir);
-        if (fb_filho > 0) { // Caso Direita-Esquerda
-            a->dir = rotacao_ll(a->dir);
-        }
-        return rotacao_rr(a);
-    }
-
-    // Se não precisou rotacionar, retorna o ponteiro original.
-    return a;
+    return balancear(a);
 }
 
 int arv_vazia(Arv* a) {
