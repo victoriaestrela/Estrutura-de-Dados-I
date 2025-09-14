@@ -153,35 +153,39 @@ Arv* insere_recursivo(Arv* a, char c) {
 }
 
 
-Arv* insere_nao_recursivo(Arv* a, char c) {
-        Arv* novo = arv_cria(c, NULL, NULL);
-        if (a == NULL) {
-            return novo;
+Arv* insere_nao_recursivo(Arv* a,char c) {
+    Arv* novo = (Arv*)malloc(sizeof(Arv));
+    if (!novo) {
+        exit(1);
+    }
+    novo->info = c;
+    novo->esq = NULL;
+    novo->dir = NULL;
+
+    if (!a) {
+        return novo;
+    }
+    Arv* atual = a;
+    Arv* pai = NULL;
+
+    while (atual != NULL) {
+        pai = atual;
+        if (c < atual->info) {
+            atual = atual->esq;
         }
-        Arv* atual = a;
-        Arv* pai = NULL;
-
-        while (atual != NULL) {
-            pai = atual; // O 'pai' segue o 'atual'.
-
-            if (c < atual->info) {
-                atual = atual->esq; // Desce para a esquerda.
-            } else {
-                atual = atual->dir; // Desce para a direita.
-            }
+        else if (c > atual->info) {
+            atual = atual->dir;
         }
-
-        //Conecta o novo nó ao seu pai.
-        // Agora, 'pai' é o nó folha onde devemos inserir.
-        // Verificamos novamente o valor para saber se conectamos na esquerda ou direita.
-        if (c < pai->info) {
-            pai->esq = novo;
-        } else {
-            pai->dir = novo;
+        else {
+            free(novo);
+            return a;
         }
+    }
+    if (c < pai->info) {
+        pai->esq = novo;
+    } else pai->dir = novo;
 
-        // A raiz original não muda, a menos que a árvore estivesse vazia.
-        return a;
+    return a;
 }
 
 Arv* remove_folha(Arv* a, char c) {
